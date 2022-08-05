@@ -1,0 +1,9 @@
+com\lagou\controller\CourseContentController.class
+com\lagou\controller\RoleController.class
+com\lagou\controller\PromotionSpaceController.class
+com\lagou\controller\UserController.class
+com\lagou\controller\ResourceController.class
+com\lagou\controller\MenuController.class
+com\lagou\controller\CourseController.class
+com\lagou\controller\PromotionAdController.class
+com\lagou\controller\TestController.class

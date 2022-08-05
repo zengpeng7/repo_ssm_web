@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lagou.dao.UserMapper">
+    <!--查询所有用户-->
+    <select id="findAllUserByPage" parameterType="com.lagou.domain.UserVO" resultType="com.lagou.domain.User">
+        SELECT
+        id,
+        name,
+        portrait,
+        phone,
+        PASSWORD,
+        STATUS,
+        create_time
+        FROM USER
+        <where>
+            <if test="true">
+                and is_del != 1
+            </if>
+            <if test="username != null">
+                and name = #{username}
+            </if>
+            <if test="startCreateTime != null and endCreateTime != null">
+                and create_time BETWEEN #{startCreateTime} AND #{endCreateTime}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateUserStatus">
+        UPDATE USER SET status=#{status} WHERE id=#{id};
+    </update>
+
+    <select id="login" resultType="com.lagou.domain.User" parameterType="com.lagou.domain.User">
+        SELECT * FROM user WHERE phone= #{phone}
+    </select>
+
+    <!--<update id="updateUser" parameterType="com.lagou.domain.User">
+        UPDATE user SET password=#{password} WHERE phone =#{phone}
+    </update>-->
+
+    <select id="findUserRelationRoleById" parameterType="int" resultType="com.lagou.domain.Role">
+        SELECT r.* FROM roles r INNER JOIN user_role_relation ur ON r.id=ur.role_id
+                                INNER JOIN user u ON ur.user_id=u.id
+                                WHERE u.id=#{id}
+    </select>
+
+    <delete id="deleteUserContextRole" parameterType="int">
+        DELETE FROM user_role_relation WHERE user_id=#{userId}
+    </delete>
+
+    <insert id="userContextRole" parameterType="com.lagou.domain.User_Role_relation">
+        INSERT INTO user_role_relation
+        VALUES(null,#{userId},#{roleId},#{createdTime},#{updatedTime},#{createdBy},#{updatedby})
+    </insert>
+
+    <!-- 根据角色id,查询角色拥有的顶级菜单信息 -->
+    <select id="findParentMenuByRoleId" parameterType="java.util.List"
+            resultType="com.lagou.domain.Menu">
+        SELECT
+        DISTINCT m.*
+        FROM roles r INNER JOIN role_menu_relation rm ON r.id = rm.role_id
+        INNER JOIN menu m ON rm.menu_id = m.id
+        WHERE m.parent_id = -1 AND r.id IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <!-- 根据PID 查找子菜单 -->
+    <select id="findSubMenuByPid" resultType="com.lagou.domain.Menu">
+        select * from menu where parent_id = #{pid}
+    </select>
+    <!-- 获取用户拥有的资源权限 -->
+    <select id="findResourceByRoleId" parameterType="java.util.List"
+            resultType="com.lagou.domain.Resource">
+        SELECT
+        DISTINCT rc.*
+        FROM roles r INNER JOIN role_resource_relation rrr ON r.id =rrr.role_id
+        INNER JOIN resource rc ON rrr.resource_id = rc.id WHERE r.id IN
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+
+</mapper>
